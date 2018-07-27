@@ -48,7 +48,7 @@ class Stimulus:
     def append(self, definition):
         """Append a stimulus sequence to the stimulus.
         
-        Call list_options() for a list of all stimulus types and their 
+        Call list_stimuli() for a list of all stimulus types and their 
         parameters.
         
         Keyword arguments:
@@ -59,6 +59,20 @@ class Stimulus:
         self.shape = (self.frames, self.height, self.width)
         
         self._definitions.append(definition)
+
+
+    def list_stimuli():
+        """Print all available stimulus types and their parameters"""
+        for key, value in self._fncts.items():
+            print('{\n\t"type": "' + key + '",')
+            params = value.__code__.co_varnames[1:value.__code__.co_argcount]
+            for param in params:
+                print('\t"' + param + '": <value>,')
+            print("}\n")
+
+
+
+
 
 
     
