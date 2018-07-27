@@ -6,7 +6,7 @@ of infinite length, stimuli are render on the go.
 """
 
 class Stimulus:
-    """Stimulus frame generator."""
+    """Stimulus frame iterator."""
     def __init__(self, fps, size, ppu):
         """Keyword arguments:
         fps -- Frames per second
@@ -28,6 +28,21 @@ class Stimulus:
         
         self._fncts = {
         }
+        
+        self._current_frame = 0
+    
+    
+    def __iter__(self):
+        return self
+    
+    
+    def __next__(self):
+        """Return next stimulus frame"""
+        if self._current_frame >= self.frames:
+            raise StopIteration
+        self._current_frame += 1
+        
+        return []
 
 
     def append(self, definition):
@@ -44,3 +59,6 @@ class Stimulus:
         self.shape = (self.frames, self.height, self.width)
         
         self._definitions.append(definition)
+
+
+    
