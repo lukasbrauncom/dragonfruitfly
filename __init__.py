@@ -18,3 +18,4 @@ Utilities
 
 """
 
+from .stimulus import Stimulus
