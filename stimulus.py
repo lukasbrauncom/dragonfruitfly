@@ -64,7 +64,6 @@ class Stimulus:
             yield frame
             
 
-
     def append(self, definition):
         """Append a stimulus sequence to the stimulus.
         
@@ -80,7 +79,11 @@ class Stimulus:
         
         self._definitions.append(definition)
     
-
+    
+    def reset(self):
+        """Reset generator to initial condition"""
+        self._generator = None
+        
 
     def list_stimuli(self):
         """Print all available stimulus types and their parameters"""
