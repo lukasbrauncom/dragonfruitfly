@@ -5,6 +5,11 @@ In order to reduce memory consumption and to enable very long and even stimuli
 of infinite length, stimuli are render on the go.
 """
 
+import copy
+from itertools import chain
+import numpy as np
+
+
 class Stimulus:
     """Stimulus frame iterator."""
     def __init__(self, fps, size, ppu):
@@ -25,11 +30,11 @@ class Stimulus:
         self.frames = 0
         
         self._definitions = []
+        self._generator = None
         
         self._fncts = {
+            "constant": self._constant
         }
-        
-        self._current_frame = 0
     
     
     def __iter__(self):
@@ -38,11 +43,26 @@ class Stimulus:
     
     def __next__(self):
         """Return next stimulus frame"""
-        if self._current_frame >= self.frames:
-            raise StopIteration
-        self._current_frame += 1
+        if self._generator == None:
+            fncts = self._fncts
+            definitions = copy.deepcopy(self._definitions)
+            mapping = [(fncts[defi.pop("type")], defi) for defi in definitions]
+            self._generator = chain(*[fnct(**defi) for fnct, defi in mapping])
         
-        return []
+        return next(self._generator)
+
+
+    def _constant(self, duration, value):
+        """Generate a constant stimulus sequence.
+        
+        Keyword arguments:
+        duration -- Duration in seconds
+        value -- intensity value of the stimulus
+        """
+        for time_step in range(int(self.fps * duration)):
+            frame = np.zeros((self.height, self.width)) + value
+            yield frame
+            
 
 
     def append(self, definition):
