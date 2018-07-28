@@ -79,10 +79,12 @@ class Stimulus:
         self.shape = (self.frames, self.height, self.width)
         
         self._definitions.append(definition)
+    
 
 
-    def list_stimuli():
+    def list_stimuli(self):
         """Print all available stimulus types and their parameters"""
+        print("Available stimuli:")
         for key, value in self._fncts.items():
             print('{\n\t"type": "' + key + '",')
             params = value.__code__.co_varnames[1:value.__code__.co_argcount]
