@@ -25,7 +25,7 @@ class View:
         self._getters = [None] * nplots
     
     
-    def add_stream(self, pos, data_type, getter, shape):
+    def add_stream(self, pos, data_type, getter, shape, **args):
         """Add a data stream to be animated.
         
         Keyword arguments:
@@ -36,7 +36,7 @@ class View:
         ax = self._axs if self._nplots == 1 else self._axs[pos]
         
         if data_type == "matrix":
-            self._artists.append(ax.matshow(np.zeros(shape), vmin = 0, vmax = 20))
+            self._artists.append(ax.matshow(np.zeros(shape), **args))
             ax.axis("off")
         
         self._getters[pos] = getter
