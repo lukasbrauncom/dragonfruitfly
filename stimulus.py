@@ -153,10 +153,11 @@ class Stimulus:
         return sel
     
     
-    def show(self):
+    def show(self, vmin, vmax):
         """Show stimulus."""
         view = View(1, self.fps)
-        view.add_stream(0, "matrix", self.__next__, [self.width, self.height])
+        view.add_stream(0, "matrix", self.__next__, [self.width, self.height],
+            vmin = vmin, vmax = vmax)
         view.run()
 
 
