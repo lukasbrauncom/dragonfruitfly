@@ -2,6 +2,7 @@
 Provide a framework to render plots and time series in real time.
 """
 
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation
 
@@ -24,7 +25,7 @@ class View:
         self._getters = [None] * nplots
     
     
-    def add_stream(self, pos, data_type, getter):
+    def add_stream(self, pos, data_type, getter, shape):
         """Add a data stream to be animated.
         
         Keyword arguments:
@@ -35,7 +36,7 @@ class View:
         ax = self._axs if self._nplots == 1 else self._axs[pos]
         
         if data_type == "matrix":
-            self._artists.append(ax.matshow([[0]], vmin = 0, vmax = 20))
+            self._artists.append(ax.matshow(np.zeros(shape), vmin = 0, vmax = 20))
             ax.axis("off")
         
         self._getters[pos] = getter
