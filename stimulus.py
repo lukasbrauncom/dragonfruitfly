@@ -36,7 +36,8 @@ class Stimulus:
         self._generator = None
         
         self._fncts = {
-            "constant": self._constant
+            "constant": self._constant,
+            "sine": self._sine
         }
     
     
@@ -66,6 +67,40 @@ class Stimulus:
             frame = np.zeros((self.height, self.width)) + value
             yield frame
     
+    
+    def _sine(self, duration, amplitude, wavelength, phase, offset, rotation, velocity):
+        """Generate sine grating stimulus sequence.
+        
+        Keyword arguments:
+        duration -- Duration in seconds
+        amplitude -- Amplitude of sine grating
+        wavelength -- Wavelength of sine grating
+        phase -- Phase shift of sine grating
+        offset -- Offset of sine grating
+        rotation -- Rotation of sine grating by 0 or 90 degree
+        velocity -- List of speed values, will be extended to the amount of frames and interpolated
+        """
+        frames = int(self.fps * duration)
+        
+        velocity = self._interpolate(velocity, frames)
+        velocity = (2*np.pi) / (self.fps / velocity)
+        velocity = velocity.cumsum()
+        
+        frequency = (2*np.pi) / float(wavelength)
+        
+        # Generate first frame
+        step_size = 1 / self.ppu
+        xx, yy = np.mgrid[0:self.size[0]:step_size, 0:self.size[1]:step_size]
+        
+        xy = yy if rotation == 0 else xx
+        
+        frame = amplitude * np.sin(frequency * xy + phase) + offset
+        
+        # Generate following frames
+        for time_step in range(frames):
+            yield frame
+            frame = amplitude * np.sin(frequency * xy + velocity[time_step] + phase) + offset
+            
 
     def append(self, definition):
         """Append a stimulus sequence to the stimulus.
@@ -98,6 +133,20 @@ class Stimulus:
                 print('\t"' + param + '": <value>,')
             print("}\n")
     
+    
+    def _interpolate(self, inp, frames):
+        """Interpolate array of values
+        
+        Keyword arguments:
+        inp -- Array of values
+        frames -- Target size
+        """
+        if len(inp) == 1:
+            return np.array(inp * frames, dtype=np.float64)
+        else:
+            new_range = np.linspace(0, len(inp)-1, frames)
+            return np.interp(new_range, np.arange(len(inp)), inp)
+            
     
     def get_frame(self):
         """Return next frame"""
