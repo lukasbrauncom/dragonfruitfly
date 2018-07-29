@@ -156,7 +156,7 @@ class Stimulus:
     def show(self):
         """Show stimulus."""
         view = View(1, self.fps)
-        view.add_stream(0, "matrix", self.__next__)
+        view.add_stream(0, "matrix", self.__next__, [self.width, self.height])
         view.run()
 
 
