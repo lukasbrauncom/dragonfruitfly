@@ -7,7 +7,10 @@ of infinite length, stimuli are render on the go.
 
 import copy
 from itertools import chain
+
 import numpy as np
+
+from .visualization import View
 
 
 class Stimulus:
@@ -62,7 +65,7 @@ class Stimulus:
         for time_step in range(int(self.fps * duration)):
             frame = np.zeros((self.height, self.width)) + value
             yield frame
-            
+    
 
     def append(self, definition):
         """Append a stimulus sequence to the stimulus.
@@ -81,12 +84,12 @@ class Stimulus:
     
     
     def reset(self):
-        """Reset generator to initial condition"""
+        """Reset generator to initial condition."""
         self._generator = None
         
 
     def list_stimuli(self):
-        """Print all available stimulus types and their parameters"""
+        """Print all available stimulus types and their parameters."""
         print("Available stimuli:")
         for key, value in self._fncts.items():
             print('{\n\t"type": "' + key + '",')
@@ -94,9 +97,21 @@ class Stimulus:
             for param in params:
                 print('\t"' + param + '": <value>,')
             print("}\n")
+    
+    
+    def get_frame(self):
+        """Return next frame"""
+        return sel
+    
+    
+    def show(self):
+        """Show stimulus."""
+        view = View(1, self.fps)
+        view.add_stream(0, "matrix", self.__next__)
+        view.run()
 
 
-
+    
 
 
 
