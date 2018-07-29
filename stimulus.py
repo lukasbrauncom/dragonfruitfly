@@ -18,7 +18,7 @@ class Stimulus:
     def __init__(self, fps, size, ppu):
         """Keyword arguments:
         fps -- Frames per second
-        size -- Stimulus size in units as tuple(height, width)
+        size -- Stimulus size in units as tuple(width, height)
         ppu -- Pixels per unit
         """
         self.fps = fps
@@ -37,7 +37,8 @@ class Stimulus:
         
         self._fncts = {
             "constant": self._constant,
-            "sine": self._sine
+            "sine": self._sine,
+            "rectangle": self._rect
         }
     
     
@@ -79,8 +80,8 @@ class Stimulus:
         phase -- Phase shift of sine grating
         offset -- Offset of sine grating
         rotation -- Rotation of sine grating by 0 or 90 degree
-        velocity -- List of speed values, will be extended to the amount of
-                    frames and interpolated
+        velocity -- List of speed values in units per second, will be extended 
+                    to the amount of frames and interpolated
         """
         frames = int(self.fps * duration)
         
@@ -103,8 +104,62 @@ class Stimulus:
             yield frame
             frame = amplitude * np.sin(frequency * xy+ velocity[time_step]
                 + phase) + offset
+    
+    
+    def _rect(self, duration, background, foreground, size, position,
+                velocity_x, velocity_y):
+        """Generate a stimulus sequence with a moving rectangle on a
+        background.
+        
+        Keyword arguments:
+        duration -- Duration in seconds
+        background -- Background value
+        foreground -- Foreground value
+        size -- Rectangle size as tuple(width, height)
+        position -- Distance to upper left corner tuple(left, top)
+        velocity_x -- List of speed values in units per second, will be
+                      extended to the amount of frames and interpolated
+        velocity_y -- List of speed values in units per second, will be
+                      extended to the amount of frames and interpolated
+        """
+        ppu = self.ppu
+        w = self.width
+        h = self.height
+        
+        velocity_x = self._interpolate(velocity_x, duration * self.fps) * ppu
+        velocity_x /= self.fps
+        velocity_y = self._interpolate(velocity_y, duration * self.fps) * ppu
+        velocity_y /= self.fps
+        
+        s = [value * ppu for value in size]
+        print(s)
+        pos = [value * ppu for value in position]
+        
+        for time_step in range(int(self.fps * duration)):
+            bg = np.zeros((h, w)) + background
+            fg = np.zeros([s[1], s[0]]) + foreground
+        
+            pos[0] += velocity_x[time_step]
+            x = np.round(pos[0]).astype(np.int32)
+            pos[1] += velocity_y[time_step]
+            y = np.round(pos[1]).astype(np.int32)
             
-
+            bg_top_x = 0 if x < 0 else w if x > w else x
+            bg_bottom_x = 0 if x+s[0] < 0 else w if x+s[0] > w else x+s[0]
+            bg_top_y = 0 if y < 0 else h if y > h else y
+            bg_bottom_y = 0 if y+s[1] < 0 else h if y+s[1] > h else y+s[1]
+            
+            fg_top_x = 0 if x > 0 else np.min([-x, s[0]])
+            fg_bottom_x = s[0] if x < w - s[0] else np.max([w-x, 0])
+            fg_top_y = 0 if y > 0 else np.min([-y, s[1]])
+            fg_bottom_y = s[1] if y < h - s[1] else np.max([h-y, 0])
+            
+            bg[bg_top_y:bg_bottom_y, bg_top_x:bg_bottom_x] = fg[fg_top_y:
+                fg_bottom_y, fg_top_x:fg_bottom_x]
+                
+            yield bg
+    
+    
     def append(self, definition):
         """Append a stimulus sequence to the stimulus.
         
@@ -157,7 +212,12 @@ class Stimulus:
     
     
     def show(self, vmin, vmax):
-        """Show stimulus."""
+        """Show stimulus.
+        
+        Keyword arguments:
+        vmin -- Minimum (black) value
+        vmax -- Maximum (white) value
+        """
         view = View(1, self.fps)
         view.add_stream(0, "matrix", self.__next__, [self.width, self.height],
             vmin = vmin, vmax = vmax)
