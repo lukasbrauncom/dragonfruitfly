@@ -68,7 +68,8 @@ class Stimulus:
             yield frame
     
     
-    def _sine(self, duration, amplitude, wavelength, phase, offset, rotation, velocity):
+    def _sine(self, duration, amplitude, wavelength, phase, offset, rotation,
+        velocity):
         """Generate sine grating stimulus sequence.
         
         Keyword arguments:
@@ -78,7 +79,8 @@ class Stimulus:
         phase -- Phase shift of sine grating
         offset -- Offset of sine grating
         rotation -- Rotation of sine grating by 0 or 90 degree
-        velocity -- List of speed values, will be extended to the amount of frames and interpolated
+        velocity -- List of speed values, will be extended to the amount of
+                    frames and interpolated
         """
         frames = int(self.fps * duration)
         
@@ -99,7 +101,8 @@ class Stimulus:
         # Generate following frames
         for time_step in range(frames):
             yield frame
-            frame = amplitude * np.sin(frequency * xy + velocity[time_step] + phase) + offset
+            frame = amplitude * np.sin(frequency * xy+ velocity[time_step]
+                + phase) + offset
             
 
     def append(self, definition):
