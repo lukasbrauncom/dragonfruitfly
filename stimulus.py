@@ -91,7 +91,7 @@ class Stimulus:
         velocity = (2*np.pi) / (self.fps / velocity)
         velocity = velocity.cumsum()
         
-        frequency = (2*np.pi) / float(wavelength * self.ppu)
+        frequency = (2*np.pi) / float(wavelength)
         
         # Generate first frame
         step_size = 1 / self.ppu
