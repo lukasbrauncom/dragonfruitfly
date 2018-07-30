@@ -88,7 +88,7 @@ class Stimulus:
         frames = int(self.fps * duration)
         
         velocity = self._interpolate(velocity, frames)
-        velocity = (2*np.pi) / (self.fps / velocity)
+        velocity = (2*np.pi*velocity) / self.fps
         velocity = velocity.cumsum()
         
         frequency = (2*np.pi) / float(wavelength)
@@ -104,7 +104,7 @@ class Stimulus:
         # Generate following frames
         for time_step in range(frames):
             yield frame
-            frame = amplitude * np.sin(frequency * xy+ velocity[time_step]
+            frame = amplitude * np.sin(frequency * xy + velocity[time_step]
                 + phase) + offset
     
     
