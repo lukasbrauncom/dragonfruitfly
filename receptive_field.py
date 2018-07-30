@@ -3,6 +3,7 @@ Create kernels for different kinds of receptive fields.
 """
 
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy import stats
 
 def gaussian(size, ppu, sigma):
@@ -25,3 +26,32 @@ def gaussian(size, ppu, sigma):
     pos[:, :, 1] = y
     
     return gauss.pdf(pos)
+
+
+def plot(kernel):
+    """Plot kernel.
+    
+    Keyword arguments:
+    kernel -- 2D numpy matrix
+    """
+    fig, ax = plt.subplots(2, 2)
+    ax[0, 0].imshow(kernel, vmin = 0)
+    ax[0, 0].set_xticks([])
+    ax[0, 0].set_yticks([])
+    
+    sl = kernel[kernel.shape[0] // 2, :]
+    ax[1, 0].plot(sl)
+    ax[1, 0].set_xlim([0, len(sl)-1])
+    
+    x = np.linspace(0, kernel.shape[0]-1, kernel.shape[0])
+    sl = kernel[:, kernel.shape[1] // 2]
+    ax[0, 1].plot(sl, x)
+    ax[0, 1].invert_xaxis()
+    ax[0, 1].invert_xaxis()
+    ax[0, 1].set_ylim([0, len(sl)-1])
+    
+    fig.delaxes(ax.flatten()[3])
+
+
+
+
