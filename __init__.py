@@ -21,4 +21,4 @@ Utilities
 from .stimulus import Stimulus
 from .visualization import View
 from .model import Model
-
+from . import receptive_field
