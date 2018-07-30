@@ -23,11 +23,18 @@ class Model:
         self._global_step = 0
         
         with self.graph.as_default():
-            self._x = tf.placeholder(tf.float32,
+            self.x = tf.placeholder(tf.float32,
                         shape = self.first_frame.shape)
         
         self._fetch_nodes = []
-        self._last_node = self._x
+        self._last_node = self.x
+        
+        self._ops = {
+            '+': tf.add,
+            '-': tf.subtract,
+            '*': tf.multiply,
+            '/': tf.divide        
+        }
     
     
     def low_pass_filter(self, input_node, node_label, time_constant):
@@ -42,10 +49,57 @@ class Model:
         with self.graph.as_default():
             with tf.variable_scope(node_label):
                 alpha = tf.constant(delta_t / (delta_t + time_constant))
+                print(self.first_frame)
                 last_output = tf.Variable(self.first_frame, trainable = False,
                     dtype = tf.float32)
-                return tf.assign(last_output, last_output +
+                lpf = tf.assign(last_output, last_output +
                     alpha * (input_node - last_output))
+                
+                self._last_node = lpf
+                return lpf
+    
+    
+    def cross_arms(self, x1, x2, node_label, direction, operator):
+        """Merge neighbouring values of two different strims along a
+        horizontal or vertical axis.
+        
+        Keyword arguments:
+        x1 -- TensorFlow node
+        x2 -- TensorFlow node
+        node_label -- Label used for the variable scope
+        direction -- horizontal or vertical as string
+        operator -- Mathematical operator to apply as string, +, -, * or /
+        """
+        op = self._ops[operator]
+        with self.graph.as_default():
+            with tf.variable_scope(node_label):
+                if direction == "horizontal":
+                    left_arm = op(x1[:, :, :-1], x2[:, :, 1:])
+                    right_arm = op(x1[:, :, 1:], x2[:, :, :-1])
+                
+                elif direction == "vertical":
+                    left_arm = op(x1[:, 1:, :], x2[:, :-1, :])
+                    right_arm = op(x1[:, :-1, :], x2[:, 1:, :])
+                
+                self._last_node = [left_arm, right_arm]
+                return left_arm, right_arm
+    
+    
+    def merge_arms(self, x1, x2, node_label, operator):
+        """Merge values of two nodes by applying a mathematical operator.
+        
+        Keyword arguments:
+        x1 -- TensorFlow node
+        x2 -- TensorFlow node
+        node_label -- Label used for the variable scope
+        operator -- Mathematical operator to apply as string, +, -, * or /
+        """
+        op = self._ops[operator]
+        with self.graph.as_default():
+            with tf.variable_scope(node_label):
+                merged = op(x1, x2)
+                self._last_node = merged
+                return merged
     
     
     def __iter__(self):
@@ -70,7 +124,7 @@ class Model:
         
         self._global_step += 1
         
-        nodes_out = self._session.run(self._fetch_nodes, {self._x: frame})
+        nodes_out = self._session.run(self._fetch_nodes, {self.x: frame})
         if type(nodes_out ) == list:
             results = [np.squeeze(res) for res in nodes_out]
         else:
