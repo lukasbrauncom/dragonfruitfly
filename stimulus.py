@@ -11,6 +11,7 @@ from itertools import chain
 import numpy as np
 
 from .visualization import View
+from .datasets import van_hateren
 
 
 class Stimulus:
@@ -38,7 +39,8 @@ class Stimulus:
         self._fncts = {
             "constant": self._constant,
             "sine": self._sine,
-            "rectangle": self._rect
+            "rectangle": self._rect,
+            "hateren": self._hateren
         }
     
     
@@ -160,6 +162,27 @@ class Stimulus:
             yield bg
     
     
+    def _hateren(self, duration, path, image_id, position, move_x, move_y):
+        """Generate a stimulus sequence with a moving window over a natural
+        image of Van Hateren's dataset.
+        
+        Keyword arguments:
+        duration -- Duration in seconds
+        path -- Path to .iml files
+        image_id -- ID of image to be load
+        position -- Initial position of the window
+        move_x -- Amount of pixels to shift window in x direction in each step        
+        move_y -- Amount of pixels to shift window in y direction in each step
+        """
+        img = van_hateren.get_image(path, image_id)
+        for time_step in range(int(self.fps * duration)):
+            top_x = position[0] + move_x * time_step
+            bottom_x = position[0] + move_x * time_step + self.size[0]
+            top_y = position[1] + move_y * time_step
+            bottom_y = position[1] + move_y * time_step + self.size[1]
+            yield img[top_y:bottom_y, top_x:bottom_x]
+    
+    
     def append(self, definition):
         """Append a stimulus sequence to the stimulus.
         
@@ -179,8 +202,8 @@ class Stimulus:
     def reset(self):
         """Reset generator to initial condition."""
         self._generator = None
-        
-
+    
+    
     def list_stimuli(self):
         """Print all available stimulus types and their parameters."""
         print("Available stimuli:")
