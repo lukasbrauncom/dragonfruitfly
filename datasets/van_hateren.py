@@ -39,3 +39,8 @@ def get_ids(path):
             ids.append("".join(filter(str.isdigit, entry.name)))
     ids.sort()
     return ids
+    
+    
+def image_shape():
+    """Return the shape of the image data as tuple(height, width)."""
+    return (1024, 1536)
