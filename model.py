@@ -30,6 +30,24 @@ class Model:
         self._last_node = self._x
     
     
+    def low_pass_filter(self, input_node, node_label, time_constant):
+        """Filter the time series with a IIR single-pole low-pass filter.
+        
+        Keyword arguments:
+        input_node -- TensorFlow node to apply the filter on
+        node_label -- Label used for the variable scope
+        time_constant -- Time constant of the filter
+        """
+        delta_t = 1 / self.stimulus.fps
+        with self.graph.as_default():
+            with tf.variable_scope(node_label):
+                alpha = tf.constant(delta_t / (delta_t + time_constant))
+                last_output = tf.Variable(self.first_frame, trainable = False,
+                    dtype = tf.float32)
+                return tf.assign(last_output, last_output +
+                    alpha * (input_node - last_output))
+    
+    
     def __iter__(self):
         if self._fetch_nodes == []:
             self._fetch_nodes = self._last_node
