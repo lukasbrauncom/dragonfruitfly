@@ -31,7 +31,8 @@ class Model:
     
     
     def __iter__(self):
-        self._fetch_nodes = self._last_node
+        if self._fetch_nodes == []:
+            self._fetch_nodes = self._last_node
         return self
     
     
@@ -51,7 +52,14 @@ class Model:
         
         self._global_step += 1
         
-        return frame, self._session.run(self._fetch_nodes, {self._x: frame})
+        nodes_out = self._session.run(self._fetch_nodes, {self._x: frame})
+        if type(nodes_out ) == list:
+            results = [np.squeeze(res) for res in nodes_out]
+        else:
+            results = np.squeeze(nodes_out)
+        frame = np.squeeze(frame)
+        
+        return frame, results
     
     
     def __call__(self, nodes):
